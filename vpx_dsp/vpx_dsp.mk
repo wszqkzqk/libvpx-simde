@@ -231,6 +231,8 @@ DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_txfm_sse2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_txfm_sse2.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_txfm_impl_sse2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_dct32x32_impl_sse2.h
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/fwd_txfm_simde.h
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/fwd_txfm_simde.c
 ifeq ($(VPX_ARCH_X86_64),yes)
 DSP_SRCS-$(HAVE_SSSE3)  += x86/fwd_txfm_ssse3_x86_64.asm
 endif
@@ -348,6 +350,8 @@ endif
 # avg
 DSP_SRCS-yes           += avg.c
 DSP_SRCS-$(HAVE_SSE2)  += x86/avg_intrin_sse2.c
+DSP_SRCS-$(CONFIG_SIMDE)  += simde/avg_intrin_simde.c
+DSP_SRCS-$(CONFIG_SIMDE)  += simde/simde_headers.h
 DSP_SRCS-$(HAVE_AVX2)  += x86/avg_intrin_avx2.c
 DSP_SRCS-$(HAVE_NEON)  += arm/avg_neon.c
 DSP_SRCS-$(HAVE_NEON)  += arm/hadamard_neon.c
@@ -399,6 +403,11 @@ DSP_SRCS-$(HAVE_AVX512) += x86/sad_avx512.c
 
 DSP_SRCS-$(HAVE_SSE2)   += x86/sad4d_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)   += x86/sad_sse2.asm
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/sad4d_simde.c
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/sad_simde.h
+DSP_SRCS-$(CONFIG_SIMDE)   += simde_constants.h
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/bitdepth_conversion_simde.h
+DSP_SRCS-$(CONFIG_SIMDE)   += simde/sad_simde_gen.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/subtract_sse2.asm
 
 DSP_SRCS-$(HAVE_VSX) += ppc/sad_vsx.c

@@ -366,6 +366,7 @@ CONFIG_LIST="
     always_adjust_bpm
     bitstream_debug
     mismatch_debug
+    simde
     ${EXPERIMENT_LIST}
 "
 CMDLINE_SELECT="
@@ -429,6 +430,7 @@ CMDLINE_SELECT="
     always_adjust_bpm
     bitstream_debug
     mismatch_debug
+    simde
 "
 
 process_cmdline() {
@@ -638,6 +640,42 @@ EOF
 
     if enabled neon && ! enabled external_build; then
       check_header arm_neon.h || die "Unable to find arm_neon.h"
+    fi
+
+    # Check for SIMDe library if simde is enabled
+    if enabled simde; then
+      # First check if simde is available via package manager or system install
+      check_header simde/simde-common.h && check_header simde/x86/sse2.h && enable_feature simde
+      if disabled simde; then
+        # Try to find simde in common install locations
+        for d in /usr/include /usr/local/include /opt/local/include /usr/include/simde /usr/local/include/simde; do
+          if [ -f "${d}/simde/simde-common.h" ] && [ -f "${d}/simde/x86/sse2.h" ]; then
+            enable_feature simde
+            add_cflags "-I${d}"
+            break
+          fi
+        done
+      fi
+      # Don't die if SIMDe is not found, just disable the feature gracefully
+      if disabled simde; then
+        echo "Warning: SIMDe library not found. SIMDe support will be disabled."
+        disable_feature simde
+      fi
+    fi
+
+    # Enable SIMDe as the cross-platform SIMD implementation
+    if enabled simde; then
+      echo "Enabling SIMDe for cross-platform SIMD compatibility"
+      add_cflags "-DVPX_SIMD_SIMDE=1"
+      enable_feature simde_primary
+      
+      # When SIMDE is enabled, warn about potential conflicts with native SIMD
+      if enabled x86 || enabled x86_64; then
+        echo "Warning: SIMDe enabled on x86 platform. Native x86 SIMD may be disabled for SIMDe compatibility."
+      fi
+      if enabled arm || enabled aarch64; then
+        echo "Warning: SIMDe enabled on ARM platform. Native ARM SIMD may be disabled for SIMDe compatibility."
+      fi
     fi
 }
 

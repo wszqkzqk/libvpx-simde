@@ -271,7 +271,11 @@ sub x86() {
   # Assign the helper variable for each enabled extension
   foreach my $opt (@ALL_ARCHS) {
     my $opt_uc = uc $opt;
-    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    if ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    } else {
+      eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    }
   }
 
   common_top;
@@ -304,7 +308,11 @@ sub arm() {
     # Enable neon assembly based on HAVE_NEON logic instead of adding new
     # HAVE_NEON_ASM logic
     if ($opt eq 'neon_asm') { $opt_uc = 'NEON' }
-    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    elsif ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    } else {
+      eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    }
   }
 
   common_top;
@@ -336,7 +344,11 @@ sub mips() {
   # Assign the helper variable for each enabled extension
   foreach my $opt (@ALL_ARCHS) {
     my $opt_uc = uc $opt;
-    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    if ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    } else {
+      eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    }
   }
 
   common_top;
@@ -380,7 +392,11 @@ sub ppc() {
   # Assign the helper variable for each enabled extension
   foreach my $opt (@ALL_ARCHS) {
     my $opt_uc = uc $opt;
-    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    if ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    } else {
+      eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    }
   }
 
   common_top;
@@ -410,7 +426,11 @@ sub loongarch() {
   # Assign the helper variable for each enabled extension
   foreach my $opt (@ALL_ARCHS) {
     my $opt_uc = uc $opt;
-    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    if ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    } else {
+      eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+    }
   }
 
   common_top;
@@ -436,7 +456,15 @@ EOF
 }
 
 sub unoptimized() {
-  determine_indirection "c";
+  determine_indirection("c", @ALL_ARCHS);
+
+  # Assign the helper variable for each enabled extension
+  foreach my $opt (@ALL_ARCHS) {
+    if ($opt eq 'simde') {
+      eval "\$have_${opt}=\"vpx_config(\\\"CONFIG_SIMDE\\\") eq \\\"yes\\\"\"";
+    }
+  }
+
   common_top;
   print <<EOF;
 #include "vpx_config.h"
@@ -446,7 +474,7 @@ static void setup_rtcd_internal(void)
 {
 EOF
 
-  set_function_pointers "c";
+  set_function_pointers("c", @ALL_ARCHS);
 
   print <<EOF;
 }
@@ -463,6 +491,7 @@ my @PRIORITY_ARCH = qw/
   rvv
   vsx
   dspr2 msa
+  simde
 /;
 my %PRIORITY_INDEX;
 for (my $i = 0; $i < @PRIORITY_ARCH; $i++) {
@@ -476,10 +505,10 @@ for (my $i = 0; $i < @PRIORITY_ARCH; $i++) {
 &require("c");
 &require(sort { $PRIORITY_INDEX{$a} <=> $PRIORITY_INDEX{$b} } keys %required);
 if ($opts{arch} eq 'x86') {
-  @ALL_ARCHS = filter(qw/mmx sse sse2 sse3 ssse3 sse4_1 avx avx2 avx512/);
+  @ALL_ARCHS = filter(qw/mmx sse sse2 sse3 ssse3 sse4_1 avx avx2 avx512 simde/);
   x86;
 } elsif ($opts{arch} eq 'x86_64') {
-  @ALL_ARCHS = filter(qw/mmx sse sse2 sse3 ssse3 sse4_1 avx avx2 avx512/);
+  @ALL_ARCHS = filter(qw/mmx sse sse2 sse3 ssse3 sse4_1 avx avx2 avx512 simde/);
   if (keys %required == 0) {
     @REQUIRES = filter(qw/mmx sse sse2/);
     &require(@REQUIRES);
@@ -517,22 +546,23 @@ if ($opts{arch} eq 'x86') {
   }
   mips;
 } elsif ($opts{arch} =~ /armv7\w?/) {
-  @ALL_ARCHS = filter(qw/neon_asm neon/);
+  @ALL_ARCHS = filter(qw/neon_asm neon simde/);
   arm;
 } elsif ($opts{arch} eq 'armv8' || $opts{arch} eq 'arm64' ) {
-  @ALL_ARCHS = filter(qw/neon neon_dotprod neon_i8mm sve sve2/);
+  @ALL_ARCHS = filter(qw/neon neon_dotprod neon_i8mm sve sve2 simde/);
   if (keys %required == 0) {
     @REQUIRES = filter(qw/neon/);
     &require(@REQUIRES);
   }
   arm;
 } elsif ($opts{arch} =~ /^ppc/ ) {
-  @ALL_ARCHS = filter(qw/vsx/);
+  @ALL_ARCHS = filter(qw/vsx simde/);
   ppc;
 } elsif ($opts{arch} =~ /loongarch/ ) {
-  @ALL_ARCHS = filter(qw/lsx lasx/);
+  @ALL_ARCHS = filter(qw/lsx lasx simde/);
   loongarch;
 } else {
+  @ALL_ARCHS = filter(qw/simde/);
   unoptimized;
 }
 

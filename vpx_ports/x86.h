@@ -223,6 +223,7 @@ static INLINE int x86_simd_caps(void) {
       }
     }
   }
+
   (void)reg_eax;  // Avoid compiler warning on unused-but-set variable.
   return flags & mask;
 }

@@ -190,16 +190,16 @@ specialize qw/vp8_short_walsh4x4 sse2 neon msa mmi/;
 # Quantizer
 #
 add_proto qw/void vp8_regular_quantize_b/, "struct block *, struct blockd *";
-specialize qw/vp8_regular_quantize_b sse2 sse4_1 msa mmi lsx/;
+specialize qw/vp8_regular_quantize_b sse2 sse4_1 msa mmi lsx simde/;
 
 add_proto qw/void vp8_fast_quantize_b/, "struct block *, struct blockd *";
-specialize qw/vp8_fast_quantize_b sse2 ssse3 neon msa mmi/;
+specialize qw/vp8_fast_quantize_b sse2 ssse3 neon msa mmi simde/;
 
 #
 # Block subtraction
 #
 add_proto qw/int vp8_block_error/, "short *coeff, short *dqcoeff";
-specialize qw/vp8_block_error sse2 msa lsx/;
+specialize qw/vp8_block_error sse2 msa lsx simde/;
 
 add_proto qw/int vp8_mbblock_error/, "struct macroblock *mb, int dc";
 specialize qw/vp8_mbblock_error sse2 msa lsx/;

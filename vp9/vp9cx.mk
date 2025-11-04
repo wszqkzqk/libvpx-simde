@@ -119,10 +119,34 @@ VP9_CX_SRCS-$(HAVE_NEON) += encoder/vp9_temporal_filter_constants.h
 VP9_CX_SRCS-$(HAVE_NEON_DOTPROD) += encoder/arm/neon/vp9_temporal_filter_neon_dotprod.c
 VP9_CX_SRCS-$(HAVE_NEON_I8MM) += encoder/arm/neon/vp9_temporal_filter_neon_i8mm.c
 
+# Native SIMD implementations - only when SIMDE is not enabled
+ifeq ($(CONFIG_SIMDE),yes)
+# Skip native SIMD implementations when SIMDE is enabled
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_block_error_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_sse2_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_ssse3_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_avx2_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_dct_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/simde.h
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_dct_simde.h
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/quantize_simde.h
+else
 VP9_CX_SRCS-$(HAVE_SSE2) += encoder/x86/vp9_quantize_sse2.c
 VP9_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/vp9_quantize_ssse3.c
 VP9_CX_SRCS-$(HAVE_AVX2) += encoder/x86/vp9_quantize_avx2.c
 VP9_CX_SRCS-$(HAVE_NEON) += encoder/arm/neon/vp9_diamond_search_sad_neon.c
+
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_block_error_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_sse2_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_ssse3_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_quantize_avx2_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_dct_simde.c
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/simde.h
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp9_dct_simde.h
+VP9_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/quantize_simde.h
+endif
 ifeq ($(CONFIG_VP9_HIGHBITDEPTH),yes)
 VP9_CX_SRCS-$(HAVE_SSE2) += encoder/x86/vp9_highbd_block_error_intrin_sse2.c
 VP9_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/highbd_temporal_filter_ssse3.c

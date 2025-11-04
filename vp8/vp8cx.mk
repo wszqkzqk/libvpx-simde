@@ -83,6 +83,10 @@ VP8_CX_SRCS_REMOVE-yes += encoder/temporal_filter.c
 VP8_CX_SRCS_REMOVE-yes += encoder/temporal_filter.h
 endif
 
+# Native SIMD implementations - only when SIMDE is not enabled
+ifeq ($(CONFIG_SIMDE),yes)
+# Skip native SIMD implementations when SIMDE is enabled
+else
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/copy_sse2.asm
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/copy_sse3.asm
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_sse2.asm
@@ -94,6 +98,14 @@ VP8_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/quantize_sse4.c
 ifeq ($(CONFIG_TEMPORAL_DENOISING),yes)
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/denoising_sse2.c
 endif
+endif
+
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp8_quantize_simde.c
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp8_quantize_sse2_simde.c
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp8_quantize_ssse3_simde.c
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/vp8_quantize_sse4_1_simde.c
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/denoising_simde.c
+VP8_CX_SRCS-$(CONFIG_SIMDE) += encoder/simde/simde.h
 
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/block_error_sse2.asm
 VP8_CX_SRCS-$(HAVE_SSE2) += encoder/x86/temporal_filter_apply_sse2.asm
